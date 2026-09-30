@@ -1,74 +1,353 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { BrainCircuit, BookOpen, Layers, Zap } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useDropzone } from 'react-dropzone';
+import { Upload, FileText, Trash2, Loader, PlayCircle } from 'lucide-react';
+import api from '../services/api';
+import { SummaryView } from '../components/workspace/SummaryView';
+import { MindMapView } from '../components/workspace/MindMapView';
+import { FlashcardsView } from '../components/workspace/FlashcardsView';
+import { QuizView } from '../components/workspace/QuizView';
+import { PageTransition } from '../components/common/PageTransition';
 
 export const Landing = () => {
-  return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-16">
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 text-center">
-        <div className="inline-flex items-center space-x-2 bg-indigo-50 text-[var(--color-primary)] px-4 py-2 rounded-full text-sm font-medium mb-8">
-          <SparklesIcon className="w-4 h-4" />
-          <span>AI-Powered Knowledge Companion</span>
-        </div>
-        <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-[var(--color-primary-text)] mb-6">
-          Turn information into <br className="hidden md:block" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-primary)] to-purple-600">understanding.</span>
-        </h1>
-        <p className="max-w-2xl mx-auto text-xl text-[var(--color-secondary-text)] mb-10">
-          Upload any PDF, DOCX, or text. Briefly analyzes your documents to generate crisp summaries, visual mind maps, flashcards, and quizzes in seconds.
-        </p>
-        <div className="flex justify-center space-x-4 flex-wrap gap-y-4">
-          <Link to="/register" className="px-8 py-4 bg-[var(--color-primary)] text-white font-semibold rounded-full hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
-            Start for free
-          </Link>
-          <Link to="/login?demo=true" className="px-8 py-4 bg-indigo-50 text-[var(--color-primary)] font-semibold rounded-full hover:bg-indigo-100 transition-all transform hover:scale-105 shadow-sm">
-            Try Demo
-          </Link>
-          <Link to="/login" className="px-8 py-4 bg-white text-[var(--color-primary-text)] font-semibold rounded-full border border-gray-200 hover:bg-gray-50 transition-all shadow-sm">
-            Sign in
-          </Link>
-        </div>
-      </section>
+  const [documents, setDocuments] = useState([]);
+  const [selectedDocId, setSelectedDocId] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [activeTab, setActiveTab] = useState('summary');
 
-      {/* Features Grid */}
-      <section className="bg-white py-20 border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <FeatureCard 
-              icon={<BrainCircuit className="w-8 h-8 text-purple-500" />}
-              title="Crisp Summaries"
-              description="Get the TL;DR, key takeaways, and core concepts without reading 100 pages."
-            />
-            <FeatureCard 
-              icon={<Layers className="w-8 h-8 text-blue-500" />}
-              title="Visual Knowledge"
-              description="Automatically generate interactive mind maps and flowcharts from your text."
-            />
-            <FeatureCard 
-              icon={<Zap className="w-8 h-8 text-yellow-500" />}
-              title="Study Faster"
-              description="Instantly create flashcards and multiple-choice quizzes to test your knowledge."
-            />
+  // We bypass auth by automatically authenticating as demo on load
+  useEffect(() => {
+    const initGuest = async () => {
+      try {
+        let token = localStorage.getItem('token');
+        if (!token) {
+          const res = await api.demoLogin();
+          token = res.data.data.token;
+          localStorage.setItem('token', token);
+        }
+        fetchDocuments();
+      } catch (err) {
+        console.error("Guest login failed", err);
+      }
+    };
+    initGuest();
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      const res = await api.getDocuments();
+      if (res.data.success) {
+        setDocuments(res.data.data.documents);
+        if (res.data.data.documents.length > 0 && !selectedDocId) {
+          setSelectedDocId(res.data.data.documents[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch docs', error);
+    }
+  };
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    if (acceptedFiles.length === 0) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', acceptedFiles[0]);
+
+    try {
+      const res = await api.uploadDocument(formData);
+      if (res.data.success) {
+        const newDocId = res.data.data.document.id;
+        // Kick off processing automatically
+        await api.processDocument(newDocId);
+        await fetchDocuments();
+        setSelectedDocId(newDocId);
+        setActiveTab('summary');
+      }
+    } catch (err) {
+      console.error("Upload failed", err);
+      alert("Failed to upload document.");
+    } finally {
+      setUploading(false);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt']
+    },
+    maxSize: 50 * 1024 * 1024 // 50MB
+  });
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this document forever?')) return;
+    try {
+      await api.deleteDocument(id);
+      setDocuments(docs => docs.filter(d => d.id !== id));
+      if (selectedDocId === id) setSelectedDocId(null);
+    } catch (err) {
+      alert("Failed to delete.");
+    }
+  };
+
+  const renderWorkspace = () => {
+    if (!selectedDocId) {
+      return (
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-10 h-full border-2 border-dashed border-[var(--color-border)] rounded-3xl m-6 bg-[var(--color-card)]/30 backdrop-blur-sm">
+          <div className="w-20 h-20 bg-[var(--color-background)] rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-[var(--color-border)]">
+            <FileText className="w-10 h-10 text-[var(--color-secondary-text)]" />
           </div>
+          <h2 className="text-2xl font-bold mb-2">No Document Selected</h2>
+          <p className="text-[var(--color-secondary-text)] max-w-md">Upload a PDF or select an existing document from the left panel to generate beautiful summaries, mind maps, and interactive video scripts.</p>
         </div>
-      </section>
-    </div>
+      );
+    }
+
+    const tabs = [
+      { id: 'summary', label: 'Summary' },
+      { id: 'mindmap', label: 'Mind Map' },
+      { id: 'flashcards', label: 'Flashcards' },
+      { id: 'quiz', label: 'Quizzes' },
+      { id: 'video', label: 'AI Video Script' },
+    ];
+
+    return (
+      <div className="flex-1 flex flex-col h-full overflow-hidden p-6">
+        {/* Futuristic Tab Bar */}
+        <div className="flex space-x-2 bg-[var(--color-card)] p-2 rounded-2xl border border-[var(--color-border)] mb-6 overflow-x-auto shadow-sm">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                activeTab === tab.id 
+                ? 'bg-[var(--color-primary)] text-white shadow-md' 
+                : 'text-[var(--color-secondary-text)] hover:text-[var(--color-primary-text)] hover:bg-[var(--color-background)]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Content Area with AnimatePresence */}
+        <div className="flex-1 overflow-y-auto rounded-3xl bg-[var(--color-card)] border border-[var(--color-border)] shadow-xl relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab + selectedDocId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="h-full"
+            >
+              {activeTab === 'summary' && <SummaryView documentId={selectedDocId} />}
+              {activeTab === 'mindmap' && <MindMapView documentId={selectedDocId} />}
+              {activeTab === 'flashcards' && <FlashcardsView documentId={selectedDocId} />}
+              {activeTab === 'quiz' && <QuizView documentId={selectedDocId} />}
+              {activeTab === 'video' && <VideoSummaryView documentId={selectedDocId} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <PageTransition>
+      <div className="min-h-screen pt-16 flex flex-col md:flex-row overflow-hidden bg-[var(--color-background)] transition-colors duration-300">
+        
+        {/* Left Panel (Like VYRA/Prism) */}
+        <div className="w-full md:w-[45%] lg:w-[40%] flex flex-col p-8 md:p-12 border-r border-[var(--color-border)] overflow-y-auto relative z-10">
+          
+          <div className="inline-flex items-center space-x-2 bg-indigo-50/10 text-indigo-400 border border-indigo-500/20 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-8 w-max">
+            <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+            <span>Instant Document Intelligence</span>
+          </div>
+
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--color-primary-text)] leading-tight mb-6">
+            Summarize <br/>anything in <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-500">seconds.</span>
+          </h1>
+
+          <p className="text-lg text-[var(--color-secondary-text)] mb-10 max-w-md">
+            Drop a PDF, DOCX or TXT. Briefly reads it, distills the key points, and hands you a clean summary — ready to copy, download, or watch.
+          </p>
+
+          {/* Epic Drag & Drop Zone */}
+          <div 
+            {...getRootProps()} 
+            className={`w-full p-10 rounded-[2rem] border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center cursor-pointer mb-10 relative overflow-hidden group
+              ${isDragActive ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5 scale-[1.02]' : 'border-[var(--color-border)] bg-[var(--color-card)]/50 hover:bg-[var(--color-card)] hover:border-indigo-400/50'}
+            `}
+          >
+            <input {...getInputProps()} />
+            
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+              {uploading ? (
+                <Loader className="w-8 h-8 text-white animate-spin" />
+              ) : (
+                <Upload className="w-8 h-8 text-white" />
+              )}
+            </div>
+            
+            <h3 className="text-xl font-bold mb-2">
+              {uploading ? 'Processing Document...' : 'Drag & drop your file'}
+            </h3>
+            <p className="text-[var(--color-secondary-text)] text-sm mb-6">PDF, DOCX, TXT — up to 50 MB</p>
+            
+            {!uploading && (
+              <button className="px-6 py-2.5 rounded-full bg-[var(--color-primary-text)] text-[var(--color-background)] font-semibold text-sm hover:scale-105 transition-transform shadow-md">
+                Browse files
+              </button>
+            )}
+          </div>
+
+          {/* Recent Files Area */}
+          <div className="mt-auto">
+            <h4 className="text-sm font-bold text-[var(--color-secondary-text)] uppercase tracking-wider mb-4">Your Library</h4>
+            <div className="space-y-3">
+              {documents.length === 0 && (
+                <p className="text-sm text-[var(--color-secondary-text)] italic">No documents yet.</p>
+              )}
+              {documents.map(doc => (
+                <div 
+                  key={doc.id}
+                  onClick={() => setSelectedDocId(doc.id)}
+                  className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all border ${
+                    selectedDocId === doc.id 
+                    ? 'bg-[var(--color-card)] border-[var(--color-primary)] shadow-md' 
+                    : 'bg-[var(--color-card)]/40 border-[var(--color-border)] hover:bg-[var(--color-card)]'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3 overflow-hidden">
+                    <div className={`p-2 rounded-lg ${selectedDocId === doc.id ? 'bg-[var(--color-primary)]/10' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                      <FileText className={`w-5 h-5 ${selectedDocId === doc.id ? 'text-[var(--color-primary)]' : 'text-gray-500'}`} />
+                    </div>
+                    <div className="truncate">
+                      <p className="font-bold text-sm text-[var(--color-primary-text)] truncate">{doc.title}</p>
+                      <p className="text-xs text-[var(--color-secondary-text)]">{doc.status}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={(e) => handleDelete(e, doc.id)}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Right Panel (Workspace) */}
+        <div className="w-full md:w-[55%] lg:w-[60%] h-[calc(100vh-4rem)] relative">
+          {renderWorkspace()}
+        </div>
+
+      </div>
+    </PageTransition>
   );
 };
 
-const SparklesIcon = (props) => (
-  <svg {...props} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-  </svg>
-);
+// Extremely Cool "Video Summary" Component
+const VideoSummaryView = ({ documentId }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [script, setScript] = useState("");
+  const [loading, setLoading] = useState(false);
 
-const FeatureCard = ({ icon, title, description }) => (
-  <div className="p-8 rounded-3xl bg-[var(--color-background)] border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-    <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6">
-      {icon}
+  // Fallback fake generation for pure frontend experience if no backend endpoint exists
+  const generateVideoScript = async () => {
+    setLoading(true);
+    try {
+      // Re-use summary endpoint or generate fake script
+      const res = await api.getSummaries(documentId);
+      if (res.data.success && res.data.data.summaries.length > 0) {
+        const text = res.data.data.summaries[0].content;
+        // Prompt Engineering format applied locally
+        setScript(`Hello! Welcome to your interactive brief. Let's dive in. Here is the main takeaway: ${text.substring(0, 300)}... And that wraps up the core insights. Thanks for watching!`);
+      } else {
+        setScript("Welcome! I am analyzing your document now. Please generate a summary first so I can read it to you!");
+      }
+    } catch (err) {
+      setScript("Welcome to the video summary! I'm an AI avatar ready to present your document.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    generateVideoScript();
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [documentId]);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+    } else {
+      const utterance = new SpeechSynthesisUtterance(script);
+      utterance.onend = () => setIsPlaying(false);
+      
+      // Try to find a good English voice
+      const voices = window.speechSynthesis.getVoices();
+      const premiumVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Samantha')));
+      if (premiumVoice) utterance.voice = premiumVoice;
+      
+      window.speechSynthesis.speak(utterance);
+      setIsPlaying(true);
+    }
+  };
+
+  return (
+    <div className="h-full w-full flex flex-col items-center justify-center p-8 bg-black/5 rounded-3xl relative overflow-hidden">
+      {/* Cool Pulsing Orb Avatar */}
+      <div className="relative mb-12 flex justify-center items-center">
+        {isPlaying && (
+          <>
+            <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }} transition={{ repeat: Infinity, duration: 2 }} className="absolute w-40 h-40 bg-indigo-500 rounded-full blur-xl"></motion.div>
+            <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.8, 0, 0.8] }} transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }} className="absolute w-32 h-32 bg-purple-500 rounded-full blur-lg"></motion.div>
+          </>
+        )}
+        <div className={`w-32 h-32 rounded-full z-10 flex items-center justify-center shadow-2xl transition-all duration-300 ${isPlaying ? 'bg-gradient-to-tr from-indigo-500 to-cyan-400 scale-110' : 'bg-gradient-to-tr from-gray-700 to-gray-900'}`}>
+           <div className={`w-24 h-24 rounded-full border-4 border-white/20 flex items-center justify-center ${isPlaying ? 'animate-pulse' : ''}`}>
+             <div className="w-8 h-8 bg-white rounded-full shadow-[0_0_20px_white]"></div>
+           </div>
+        </div>
+      </div>
+
+      <h3 className="text-3xl font-extrabold text-[var(--color-primary-text)] mb-4 text-center">AI Video Presenter</h3>
+      <p className="text-lg text-[var(--color-secondary-text)] text-center max-w-md mb-8">
+        Listen to an interactive, podcast-style presentation of your document's core insights.
+      </p>
+
+      <button 
+        onClick={togglePlay}
+        disabled={loading}
+        className={`flex items-center space-x-3 px-8 py-4 rounded-full font-bold text-white transition-all transform hover:scale-105 shadow-xl ${
+          isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-[var(--color-primary)] hover:bg-indigo-600'
+        }`}
+      >
+        <PlayCircle className={`w-6 h-6 ${isPlaying ? 'animate-pulse' : ''}`} />
+        <span>{loading ? 'Preparing Script...' : isPlaying ? 'Stop Presenting' : 'Play Video Summary'}</span>
+      </button>
+
+      {/* Captions Box */}
+      {isPlaying && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="absolute bottom-8 left-8 right-8 bg-black/80 backdrop-blur-md rounded-2xl p-6 text-white text-center border border-white/10"
+        >
+          <p className="text-lg font-medium leading-relaxed italic">"{script}"</p>
+        </motion.div>
+      )}
     </div>
-    <h3 className="text-xl font-bold text-[var(--color-primary-text)] mb-3">{title}</h3>
-    <p className="text-[var(--color-secondary-text)] leading-relaxed">{description}</p>
-  </div>
-);
+  );
+};
