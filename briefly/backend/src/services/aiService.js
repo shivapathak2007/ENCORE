@@ -10,7 +10,7 @@ class AIService {
         console.warn('⚠️ AI_API_KEY is not set. AI features will fail.');
       }
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.modelStr = process.env.AI_MODEL || 'gemini-3.8-flash';
+      this.modelStr = process.env.AI_MODEL || 'gemini-flash-latest';
     }
   }
 
@@ -21,8 +21,17 @@ class AIService {
         generationConfig: { responseMimeType: "application/json" }
       });
       const result = await model.generateContent(prompt);
-      const text = result.response.text();
-      return JSON.parse(text);
+      let text = result.response.text();
+      // Clean up markdown formatting if the AI returned it
+      if (text.startsWith('```')) {
+        text = text.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/\n?```$/, '');
+      }
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.error("AI JSON Parse Error:", e, text);
+        throw new Error('AI returned invalid format');
+      }
     }
     throw new Error('Unsupported AI provider');
   }
