@@ -20,9 +20,9 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/dashboard/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
-            <Route path="/workspace/:id" element={<ProtectedRoute><DocumentWorkspace /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/upload" element={<Upload />} />
+            <Route path="/workspace/:id" element={<DocumentWorkspace />} />
           </Routes>
         </div>
       </Router>

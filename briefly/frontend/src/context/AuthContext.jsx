@@ -9,26 +9,17 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
+    fetchUser();
   }, []);
 
   const fetchUser = async () => {
-    try {
-      const res = await api.getMe();
-      if (res.data.success) {
-        setUser(res.data.data.user);
-      }
-    } catch (err) {
-      console.error('Failed to fetch user', err);
-      localStorage.removeItem('token');
-    } finally {
-      setLoading(false);
-    }
+    // Bypassing login check
+    setUser({
+      id: '12345678-1234-1234-1234-123456789012',
+      name: 'Guest User',
+      email: 'guest@example.com'
+    });
+    setLoading(false);
   };
 
   const login = async (email, password) => {

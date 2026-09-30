@@ -18,17 +18,9 @@ export const Landing = () => {
         <p className="max-w-2xl mx-auto text-xl text-[var(--color-secondary-text)] mb-10">
           Upload any PDF, DOCX, or text. Briefly analyzes your documents to generate crisp summaries, visual mind maps, flashcards, and quizzes in seconds.
         </p>
-        <div className="flex justify-center space-x-4 flex-wrap gap-y-4">
-          <Link to="/register" className="px-8 py-4 bg-[var(--color-primary)] text-white font-semibold rounded-full hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
-            Start for free
+          <Link to="/dashboard" className="px-8 py-4 bg-[var(--color-primary)] text-white font-semibold rounded-full hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+            Enter App
           </Link>
-          <Link to="/login?demo=true" className="px-8 py-4 bg-indigo-50 text-[var(--color-primary)] font-semibold rounded-full hover:bg-indigo-100 transition-all transform hover:scale-105 shadow-sm">
-            Try Demo
-          </Link>
-          <Link to="/login" className="px-8 py-4 bg-white text-[var(--color-primary-text)] font-semibold rounded-full border border-gray-200 hover:bg-gray-50 transition-all shadow-sm">
-            Sign in
-          </Link>
-        </div>
       </section>
 
       {/* Features Grid */}
