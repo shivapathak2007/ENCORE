@@ -52,7 +52,7 @@ export const QuizView = ({ documentId }) => {
 
   const handleSubmitQuiz = () => {
     let currentScore = 0;
-    activeQuiz.questions.forEach(q => {
+    activeQuiz?.questions?.forEach(q => {
       if (answers[q.id] === q.correct_answer) {
         currentScore++;
       }
@@ -130,13 +130,13 @@ export const QuizView = ({ documentId }) => {
           </div>
 
           <div className="space-y-10">
-            {activeQuiz.questions.map((q, index) => (
+            {activeQuiz?.questions?.map((q, index) => (
               <div key={q.id}>
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                   <span className="text-gray-400 mr-2">{index + 1}.</span> {q.question}
                 </h4>
                 <div className="space-y-3">
-                  {q.options.map((opt, i) => {
+                  {q.options?.map((opt, i) => {
                     const isSelected = answers[q.id] === opt;
                     const isCorrect = opt === q.correct_answer;
                     

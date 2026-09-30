@@ -101,7 +101,7 @@ export const FlashcardsView = ({ documentId }) => {
                 <div className="absolute w-full h-full backface-hidden bg-white border-2 border-indigo-100 rounded-3xl shadow-lg p-10 flex flex-col items-center justify-center text-center">
                   <span className="absolute top-6 left-6 text-indigo-300 font-bold tracking-widest uppercase text-sm">Question</span>
                   <span className="absolute top-6 right-6 text-gray-400 text-sm font-medium">{currentIndex + 1} / {flashcards.length}</span>
-                  <h3 className="text-3xl font-bold text-gray-800 leading-tight">{flashcards[currentIndex].front || flashcards[currentIndex].question}</h3>
+                  <h3 className="text-3xl font-bold text-gray-800 leading-tight">{flashcards[currentIndex]?.front || flashcards[currentIndex]?.question || 'No question found'}</h3>
                   <div className="absolute bottom-6 flex items-center text-indigo-400 text-sm font-medium">
                     <RefreshCcw className="w-4 h-4 mr-2" /> Click to reveal answer
                   </div>
@@ -110,7 +110,7 @@ export const FlashcardsView = ({ documentId }) => {
                 {/* Back (Answer) */}
                 <div className="absolute w-full h-full backface-hidden bg-[var(--color-primary)] border-2 border-[var(--color-primary)] rounded-3xl shadow-lg p-10 flex flex-col items-center justify-center text-center rotate-y-180">
                   <span className="absolute top-6 left-6 text-indigo-200 font-bold tracking-widest uppercase text-sm">Answer</span>
-                  <h3 className="text-2xl font-medium text-white leading-relaxed">{flashcards[currentIndex].back || flashcards[currentIndex].answer}</h3>
+                  <h3 className="text-2xl font-medium text-white leading-relaxed">{flashcards[currentIndex]?.back || flashcards[currentIndex]?.answer || 'No answer found'}</h3>
                 </div>
               </div>
             </div>
