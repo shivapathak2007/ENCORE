@@ -6,7 +6,6 @@ import { SummaryView } from '../components/workspace/SummaryView';
 import { MindMapView } from '../components/workspace/MindMapView';
 import { FlashcardsView } from '../components/workspace/FlashcardsView';
 import { QuizView } from '../components/workspace/QuizView';
-import { QuizView } from '../components/workspace/QuizView';
 import { QAChatView } from '../components/workspace/QAChatView';
 import { PageTransition } from '../components/common/PageTransition';
 
