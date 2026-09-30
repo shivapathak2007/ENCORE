@@ -12,20 +12,30 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-// Layout helper for mindmap
-const getLayoutedElements = (nodes, edges, direction = 'TB') => {
-  // A simple radial/tree layout is ideal, but for simplicity here we'll 
-  // space them out. If we had dagre we could use it, but let's do a basic layout.
-  
-  // Very naive layout: Root at top, children spread out below.
-  let y = 50;
+const getLayoutedElements = (nodes, edges) => {
+  // Simple hierarchical layout
+  let rootNode = nodes.find(n => n.id === '1') || nodes[0];
+  if (!rootNode) return { nodes, edges };
+
   const layoutedNodes = nodes.map((node, index) => {
-    // If it's node id 1 (root), put it at top center
-    if (node.id === '1') {
-      return { ...node, position: { x: 400, y: y } };
+    if (node.id === rootNode.id) {
+      return { ...node, position: { x: 400, y: 50 } };
     }
-    // Spread others below
-    return { ...node, position: { x: (index % 5) * 200, y: y + 150 + Math.floor(index / 5) * 100 } };
+    // Spread children nicely
+    const otherNodes = nodes.filter(n => n.id !== rootNode.id);
+    const nodeIndex = otherNodes.findIndex(n => n.id === node.id);
+    
+    // Calculate position: center is 400, spread them by 250px each
+    const totalWidth = (otherNodes.length - 1) * 250;
+    const startX = 400 - (totalWidth / 2);
+    
+    return { 
+      ...node, 
+      position: { 
+        x: startX + (nodeIndex * 250), 
+        y: 200 + (nodeIndex % 2 === 0 ? 0 : 80) // Stagger slightly vertically
+      } 
+    };
   });
 
   return { nodes: layoutedNodes, edges };
