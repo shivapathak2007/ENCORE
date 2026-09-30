@@ -70,8 +70,12 @@ class AIService {
 
   async generateMindMap(text) {
     const prompt = `
-      Create a hierarchical mind map based on the following text.
-      Identify the main topic as the center node, major topics as branches, and subtopics/concepts as leaves.
+      Create a SIMPLE, clean hierarchical mind map based on the following text.
+      RULES:
+      1. Keep it simple and strictly hierarchical (like a tree).
+      2. Max 6-8 nodes in total.
+      3. Only connect children to their direct parent. NO complex cross-connections.
+      
       Return valid JSON in this exact structure:
       {
         "title": "Main Topic",
