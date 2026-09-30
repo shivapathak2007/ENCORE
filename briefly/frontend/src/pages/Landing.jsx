@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileText, Trash2, Loader, PlayCircle } from 'lucide-react';
@@ -10,8 +11,10 @@ import { QuizView } from '../components/workspace/QuizView';
 import { PageTransition } from '../components/common/PageTransition';
 
 export const Landing = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
-  const [selectedDocId, setSelectedDocId] = useState(null);
+  const [selectedDocId, setSelectedDocId] = useState(id || null);
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState('summary');
 
@@ -33,13 +36,21 @@ export const Landing = () => {
     initGuest();
   }, []);
 
+  useEffect(() => {
+    if (id && id !== selectedDocId) {
+      setSelectedDocId(id);
+    }
+  }, [id]);
+
   const fetchDocuments = async () => {
     try {
       const res = await api.getDocuments();
       if (res.data.success) {
         setDocuments(res.data.data.documents);
         if (res.data.data.documents.length > 0 && !selectedDocId) {
-          setSelectedDocId(res.data.data.documents[0].id);
+          const firstDocId = res.data.data.documents[0].id;
+          setSelectedDocId(firstDocId);
+          navigate(`/workspace/${firstDocId}`, { replace: true });
         }
       }
     } catch (error) {
@@ -62,6 +73,7 @@ export const Landing = () => {
         await fetchDocuments();
         setSelectedDocId(newDocId);
         setActiveTab('summary');
+        navigate(`/workspace/${newDocId}`);
       }
     } catch (err) {
       console.error("Upload failed", err);
@@ -216,7 +228,10 @@ export const Landing = () => {
               {documents.map(doc => (
                 <div 
                   key={doc.id}
-                  onClick={() => setSelectedDocId(doc.id)}
+                  onClick={() => {
+                    setSelectedDocId(doc.id);
+                    navigate(`/workspace/${doc.id}`);
+                  }}
                   className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all border ${
                     selectedDocId === doc.id 
                     ? 'bg-[var(--color-card)] border-[var(--color-primary)] shadow-md' 
@@ -234,7 +249,7 @@ export const Landing = () => {
                   </div>
                   <button 
                     onClick={(e) => handleDelete(e, doc.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors"
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors z-20 relative"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
