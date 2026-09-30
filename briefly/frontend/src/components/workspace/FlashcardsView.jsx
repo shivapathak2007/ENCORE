@@ -32,7 +32,7 @@ export const FlashcardsView = ({ documentId }) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const res = await api.generateFlashcards(documentId, 10);
+      const res = await api.generateFlashcards(documentId, 6);
       if (res.data.success) {
         setFlashcards(res.data.data.flashcards);
         setCurrentIndex(0);

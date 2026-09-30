@@ -6,7 +6,9 @@ import { SummaryView } from '../components/workspace/SummaryView';
 import { MindMapView } from '../components/workspace/MindMapView';
 import { FlashcardsView } from '../components/workspace/FlashcardsView';
 import { QuizView } from '../components/workspace/QuizView';
+import { QuizView } from '../components/workspace/QuizView';
 import { QAChatView } from '../components/workspace/QAChatView';
+import { PageTransition } from '../components/common/PageTransition';
 
 export const DocumentWorkspace = () => {
   const { id } = useParams();
@@ -33,18 +35,22 @@ export const DocumentWorkspace = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center bg-[var(--color-background)]">
-        <Loader className="w-10 h-10 text-[var(--color-primary)] animate-spin" />
-      </div>
+      <PageTransition>
+        <div className="min-h-screen pt-20 flex items-center justify-center bg-[var(--color-background)]">
+          <Loader className="w-10 h-10 text-[var(--color-primary)] animate-spin" />
+        </div>
+      </PageTransition>
     );
   }
 
   if (!document) {
     return (
-      <div className="min-h-screen pt-20 flex flex-col items-center justify-center bg-[var(--color-background)]">
-        <h2 className="text-2xl font-bold mb-4">Document not found</h2>
-        <Link to="/dashboard" className="text-[var(--color-primary)] hover:underline">Back to Dashboard</Link>
-      </div>
+      <PageTransition>
+        <div className="min-h-screen pt-20 flex flex-col items-center justify-center bg-[var(--color-background)]">
+          <h2 className="text-2xl font-bold mb-4">Document not found</h2>
+          <Link to="/dashboard" className="text-[var(--color-primary)] hover:underline">Back to Dashboard</Link>
+        </div>
+      </PageTransition>
     );
   }
 
@@ -60,8 +66,9 @@ export const DocumentWorkspace = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-16 flex flex-col">
-      {/* Workspace Header */}
+    <PageTransition>
+      <div className="min-h-screen bg-[var(--color-background)] pt-16 flex flex-col transition-colors duration-300">
+        {/* Workspace Header */}
       <div className="bg-white border-b border-gray-200 py-4 px-6 flex items-center justify-between z-10">
         <div className="flex items-center space-x-4">
           <Link to="/dashboard" className="p-2 bg-gray-50 rounded-full text-gray-500 hover:text-[var(--color-primary)] transition-colors">
@@ -89,7 +96,8 @@ export const DocumentWorkspace = () => {
           {renderContent()}
         </div>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   );
 };
 

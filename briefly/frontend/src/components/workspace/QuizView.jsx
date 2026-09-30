@@ -34,7 +34,7 @@ export const QuizView = ({ documentId }) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const res = await api.generateQuiz(documentId, 5);
+      const res = await api.generateQuiz(documentId, 3);
       if (res.data.success) {
         setQuizzes([res.data.data.quiz, ...quizzes]);
       }

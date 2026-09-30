@@ -34,6 +34,7 @@ export default {
   }),
   getDocuments: () => api.get('/documents'),
   getDocument: (id) => api.get(`/documents/${id}`),
+  deleteDocument: (id) => api.delete(`/documents/${id}`),
   processDocument: (id) => api.post(`/documents/${id}/process`),
   
   // Knowledge Generation

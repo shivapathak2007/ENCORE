@@ -1,11 +1,23 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { BookOpen, LogOut, User as UserIcon } from 'lucide-react';
+import { BookOpen, LogOut, User as UserIcon, Moon, Sun } from 'lucide-react';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [isDark, setIsDark] = React.useState(localStorage.getItem('theme') === 'dark');
+
+  React.useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
 
   const handleLogout = () => {
     logout();
@@ -13,7 +25,7 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="fixed w-full z-50 top-0 left-0 border-b border-gray-200 bg-white/80 backdrop-blur-md">
+    <nav className="fixed w-full z-50 top-0 left-0 border-b border-[var(--color-border)] bg-[var(--color-card)]/80 backdrop-blur-md transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           <Link to={user ? "/dashboard" : "/"} className="flex items-center space-x-2">
@@ -24,12 +36,19 @@ export const Navbar = () => {
           </Link>
 
           <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => setIsDark(!isDark)}
+              className="p-2 text-[var(--color-secondary-text)] hover:text-[var(--color-primary-text)] transition-colors rounded-full hover:bg-[var(--color-background)]"
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
             {user ? (
               <>
                 <Link to="/dashboard" className="text-sm font-medium text-[var(--color-secondary-text)] hover:text-[var(--color-primary-text)] transition-colors">
                   Dashboard
                 </Link>
-                <div className="h-8 w-px bg-gray-200 mx-2"></div>
+                <div className="h-8 w-px bg-[var(--color-border)] mx-2"></div>
                 <div className="flex items-center space-x-2 text-sm text-[var(--color-primary-text)] font-medium">
                   <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-[var(--color-primary)]">
                     {user.name?.charAt(0).toUpperCase()}
@@ -38,7 +57,7 @@ export const Navbar = () => {
                 </div>
                 <button 
                   onClick={handleLogout}
-                  className="p-2 text-[var(--color-secondary-text)] hover:text-red-500 transition-colors rounded-full hover:bg-gray-100"
+                  className="p-2 text-[var(--color-secondary-text)] hover:text-red-500 transition-colors rounded-full hover:bg-[var(--color-background)]"
                   title="Logout"
                 >
                   <LogOut className="w-5 h-5" />

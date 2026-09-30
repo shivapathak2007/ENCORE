@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
-import { Upload, FileText, Activity, Layers, Clock, Search, MoreVertical } from 'lucide-react';
+import { Upload, FileText, Activity, Layers, Clock, Search, MoreVertical, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PageTransition } from '../components/common/PageTransition';
 
 export const Dashboard = () => {
   const { user } = useAuth();
@@ -26,6 +27,22 @@ export const Dashboard = () => {
     }
   };
 
+  const handleDelete = async (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+    
+    try {
+      const res = await api.deleteDocument(id);
+      if (res.data.success) {
+        setDocuments(documents.filter(doc => doc.id !== id));
+      }
+    } catch (error) {
+      console.error('Failed to delete document', error);
+      alert('Failed to delete document');
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'Completed': return 'bg-green-100 text-green-700';
@@ -36,8 +53,9 @@ export const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)] pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <PageTransition>
+      <div className="min-h-screen bg-[var(--color-background)] pt-20 pb-12 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
@@ -83,8 +101,12 @@ export const Dashboard = () => {
                     <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
                       <FileText className="w-5 h-5 text-[var(--color-primary)]" />
                     </div>
-                    <button className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <MoreVertical className="w-5 h-5" />
+                    <button 
+                      onClick={(e) => handleDelete(e, doc.id)}
+                      className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 z-10"
+                      title="Delete Document"
+                    >
+                      <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                   <h3 className="font-bold text-[var(--color-primary-text)] truncate mb-1">{doc.title}</h3>
@@ -113,8 +135,9 @@ export const Dashboard = () => {
             </div>
           )}
         </div>
+        </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 
