@@ -10,7 +10,7 @@ class AIService {
         console.warn('⚠️ AI_API_KEY is not set. AI features will fail.');
       }
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.modelStr = process.env.AI_MODEL || 'gemini-flash-latest';
+      this.modelStr = process.env.AI_MODEL || 'gemini-3.5-flash';
     }
   }
 
