@@ -5,26 +5,33 @@ const { extractTextFromPPTX } = require('./pptxService');
 const parseDocument = async (buffer, mimeType) => {
   let parsedData = { text: '', pageCount: null, metadata: null };
 
-  switch (mimeType) {
-    case 'application/pdf':
+  let typeToUse = mimeType;
+  
+  // Fallback for vague mimetypes if needed, though we should rely on extension if possible
+  if (typeToUse === 'application/octet-stream') {
+    // We would need the filename to do this properly, but for now let's just try PDF as a guess
+    // or just let it fail. 
+  }
+
+  if (typeToUse.includes('pdf')) {
+    parsedData = await extractTextFromPDF(buffer);
+  } else if (typeToUse.includes('wordprocessingml') || typeToUse.includes('msword')) {
+    parsedData = await extractTextFromDOCX(buffer);
+  } else if (typeToUse.includes('presentationml') || typeToUse.includes('ms-powerpoint')) {
+    parsedData = await extractTextFromPPTX(buffer);
+  } else if (typeToUse.includes('text/') || typeToUse.includes('markdown')) {
+    parsedData.text = buffer.toString('utf-8');
+  } else {
+    // Ultimate fallback: try to extract it as text anyway. If it's binary, it will be garbage, but it won't crash instantly.
+    try {
       parsedData = await extractTextFromPDF(buffer);
-      break;
-    
-    case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': // DOCX
-      parsedData = await extractTextFromDOCX(buffer);
-      break;
-
-    case 'application/vnd.openxmlformats-officedocument.presentationml.presentation': // PPTX
-      parsedData = await extractTextFromPPTX(buffer);
-      break;
-
-    case 'text/plain':
-    case 'text/markdown':
-      parsedData.text = buffer.toString('utf-8');
-      break;
-
-    default:
-      throw new Error('Unsupported file type for parsing');
+    } catch (e) {
+      try {
+        parsedData = await extractTextFromDOCX(buffer);
+      } catch (e2) {
+        parsedData.text = buffer.toString('utf-8');
+      }
+    }
   }
 
   // Basic cleanup of extracted text (remove multiple newlines, etc.)

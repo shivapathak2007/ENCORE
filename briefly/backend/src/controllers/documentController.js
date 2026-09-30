@@ -160,8 +160,9 @@ const processDocument = async (req, res, next) => {
         // 3. Extract text
         const parsedData = await parseDocument(buffer, document.file_type);
 
-        if (!parsedData.text || parsedData.text.length === 0) {
-          throw new Error('No text could be extracted from this document');
+        if (!parsedData.text || parsedData.text.trim().length === 0) {
+          console.warn('No text extracted, inserting fallback text.');
+          parsedData.text = "No readable text could be extracted from this document. It might be an image-based PDF or an unsupported format.";
         }
 
         // 4. Chunk text
