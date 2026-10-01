@@ -1,13 +1,14 @@
 # ROADMAP.md
 
-> **Current Phase**: Not started
+> **Current Phase**: Completed All Phases
 > **Milestone**: Polish & Media Expansion
 
 ## Must-Haves (from SPEC)
-- [ ] Audio/Video file uploads and transcription
-- [ ] Export functionality (PDF/Markdown)
-- [ ] Enhanced AI Video Script (Real TTS)
-- [ ] Gamified Quiz UI
+- [x] Audio/Video file uploads and transcription
+- [x] Export functionality (PDF/Markdown)
+- [x] Enhanced AI Video Script (Real TTS)
+- [x] Gamified Quiz UI
+- [x] SEO & Performance Optimization
 
 ## Phases
 
@@ -22,3 +23,7 @@
 ### Phase 3: Real AI Avatar TTS
 **Status**: ✅ Complete
 **Objective**: Replace the basic browser `speechSynthesis` with a higher-quality Text-To-Speech API (like Google Cloud TTS or ElevenLabs) for the AI Presenter feature.
+
+### Phase 4: SEO & Performance
+**Status**: ✅ Complete
+**Objective**: Implement React code-splitting and add `react-helmet-async` for static/dynamic OpenGraph and SEO meta tags.
