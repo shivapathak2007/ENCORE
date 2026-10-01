@@ -1,6 +1,6 @@
 import axios from 'axios';
-// Hardcoded to the exact correct URL to bypass any Vercel ENV typos
-const API_URL = 'https://encore-va72.onrender.com/api';
+const isDev = import.meta.env.MODE === 'development';
+const API_URL = isDev ? 'http://localhost:5001/api' : 'https://encore-va72.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
