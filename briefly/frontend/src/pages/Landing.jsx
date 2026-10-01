@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
@@ -275,6 +275,7 @@ const VideoSummaryView = ({ documentId }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [script, setScript] = useState("");
   const [loading, setLoading] = useState(false);
+  const audioRef = useRef(null);
 
   // Fallback fake generation for pure frontend experience if no backend endpoint exists
   const generateVideoScript = async () => {
@@ -299,25 +300,33 @@ const VideoSummaryView = ({ documentId }) => {
   useEffect(() => {
     generateVideoScript();
     return () => {
-      window.speechSynthesis.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     };
   }, [documentId]);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (isPlaying) {
-      window.speechSynthesis.cancel();
+      if (audioRef.current) audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      const utterance = new SpeechSynthesisUtterance(script);
-      utterance.onend = () => setIsPlaying(false);
-      
-      // Try to find a good English voice
-      const voices = window.speechSynthesis.getVoices();
-      const premiumVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Samantha')));
-      if (premiumVoice) utterance.voice = premiumVoice;
-      
-      window.speechSynthesis.speak(utterance);
-      setIsPlaying(true);
+      setLoading(true);
+      try {
+        const res = await api.generateTTS(documentId || 'demo', script);
+        if (res.data.success && res.data.data.audio) {
+          const audio = new Audio("data:audio/mp3;base64," + res.data.data.audio);
+          audioRef.current = audio;
+          audio.onended = () => setIsPlaying(false);
+          audio.play();
+          setIsPlaying(true);
+        }
+      } catch (err) {
+        console.error("TTS Failed:", err);
+        alert("Failed to load real AI voice. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

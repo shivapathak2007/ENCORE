@@ -7,7 +7,8 @@ const {
   getDocuments, 
   getDocument, 
   deleteDocument,
-  processDocument
+  processDocument,
+  generateTTS
 } = require('../controllers/documentController');
 
 const summaryRoutes = require('./summaryRoutes');
@@ -26,6 +27,7 @@ router.get('/:id', getDocument);
 router.delete('/:id', deleteDocument);
 router.post('/:id/process', processDocument);
 router.post('/:id/ask', askQuestion);
+router.post('/:id/tts', generateTTS);
 
 // Mount nested routes
 router.use('/:id/summary', summaryRoutes);

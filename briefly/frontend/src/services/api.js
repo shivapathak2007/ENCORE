@@ -51,4 +51,5 @@ export default {
   getQuizzes: (id) => api.get(`/documents/${id}/quiz`),
 
   askQuestion: (id, question) => api.post(`/documents/${id}/ask`, { question }),
+  generateTTS: (id, text) => api.post(`/documents/${id}/tts`, { text }),
 };

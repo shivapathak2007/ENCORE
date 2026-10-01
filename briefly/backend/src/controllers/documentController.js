@@ -4,6 +4,7 @@ const supabase = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { parseDocument } = require('../services/documentParserService');
 const { chunkText } = require('../services/chunkingService');
+const googleTTS = require('google-tts-api');
 
 const uploadDocument = async (req, res, next) => {
   try {
@@ -192,10 +193,36 @@ const processDocument = async (req, res, next) => {
   }
 };
 
+const generateTTS = async (req, res, next) => {
+  try {
+    const { text } = req.body;
+    if (!text) return res.status(400).json({ success: false, message: 'Text is required' });
+
+    // Google TTS has a limit of 200 characters per request, but getAudioBase64 handles chunking implicitly in some wrappers, 
+    // or we can just send the first 200 chars for the demo, or use getAudioBase64 which might limit it.
+    // Actually, getAudioBase64 limits to 200 chars. Let's just use it on the truncated text for the MVP.
+    const safeText = text.substring(0, 199);
+    
+    const base64Audio = await googleTTS.getAudioBase64(safeText, {
+      lang: 'en',
+      slow: false,
+      host: 'https://translate.google.com',
+    });
+
+    res.status(200).json({
+      success: true,
+      data: { audio: base64Audio }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   uploadDocument,
   getDocuments,
   getDocument,
   deleteDocument,
-  processDocument
+  processDocument,
+  generateTTS
 };
