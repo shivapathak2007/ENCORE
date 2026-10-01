@@ -138,14 +138,6 @@ export const MindMapView = ({ documentId }) => {
           <h2 className="text-2xl font-bold text-[var(--color-primary-text)]">Knowledge Map</h2>
           <p className="text-[var(--color-secondary-text)] mt-1 text-sm">Visual relationships extracted from your document.</p>
         </div>
-        <button 
-          onClick={generateMindMap}
-          disabled={isGenerating}
-          className="px-4 py-2 bg-[var(--color-primary)] text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 flex items-center"
-        >
-          {isGenerating ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-          Generate Map
-        </button>
       </div>
 
       {error && <div className="m-6 p-4 bg-red-50 text-red-700 rounded-xl z-20 absolute top-20">{error}</div>}
@@ -156,7 +148,7 @@ export const MindMapView = ({ documentId }) => {
             <div className="text-center py-20 px-10 bg-white rounded-3xl border border-gray-100 border-dashed max-w-md shadow-sm">
               <Sparkles className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900">No mind map generated</h3>
-              <p className="text-gray-500 mt-1">Click "Generate Map" to visualize the concepts in this document.</p>
+              <p className="text-gray-500 mt-1">This document has no mind map data.</p>
             </div>
           </div>
         ) : (

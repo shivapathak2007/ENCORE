@@ -70,14 +70,6 @@ export const FlashcardsView = ({ documentId }) => {
           <h2 className="text-2xl font-bold text-[var(--color-primary-text)]">Flashcards</h2>
           <p className="text-[var(--color-secondary-text)] mt-1">Active recall training generated from your document.</p>
         </div>
-        <button 
-          onClick={generateFlashcards}
-          disabled={isGenerating}
-          className="px-4 py-2 bg-[var(--color-primary)] text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 flex items-center"
-        >
-          {isGenerating ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-          Generate New Set
-        </button>
       </div>
 
       {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl">{error}</div>}
@@ -86,7 +78,7 @@ export const FlashcardsView = ({ documentId }) => {
         <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 border-dashed flex-1 flex flex-col justify-center items-center">
           <Layers className="w-12 h-12 text-gray-300 mb-4" />
           <h3 className="text-lg font-medium text-gray-900">No flashcards generated</h3>
-          <p className="text-gray-500 mt-1">Generate a set to start studying.</p>
+              <p className="text-gray-500 mt-1">This document has no flashcards.</p>
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center">

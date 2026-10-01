@@ -18,6 +18,7 @@ export const Landing = () => {
   const [documents, setDocuments] = useState([]);
   const [selectedDocId, setSelectedDocId] = useState(id || null);
   const [uploading, setUploading] = useState(false);
+  const [uploadText, setUploadText] = useState('Processing Document...');
   const [activeTab, setActiveTab] = useState('summary');
 
   // We bypass auth by automatically authenticating as demo on load
@@ -63,6 +64,7 @@ export const Landing = () => {
   const onDrop = useCallback(async (acceptedFiles) => {
     if (acceptedFiles.length === 0) return;
     setUploading(true);
+    setUploadText('Uploading file...');
     const formData = new FormData();
     formData.append('file', acceptedFiles[0]);
 
@@ -70,8 +72,22 @@ export const Landing = () => {
       const res = await api.uploadDocument(formData);
       if (res.data.success) {
         const newDocId = res.data.data.document.id;
-        // Kick off processing automatically
+        
+        setUploadText('Extracting Text & Processing...');
         await api.processDocument(newDocId);
+        
+        setUploadText('Generating AI Summary...');
+        await api.generateSummary(newDocId, 'Detailed');
+        
+        setUploadText('Creating Mind Map...');
+        await api.generateMindMap(newDocId);
+        
+        setUploadText('Building Flashcards...');
+        await api.generateFlashcards(newDocId, 10);
+        
+        setUploadText('Crafting Knowledge Quiz...');
+        await api.generateQuiz(newDocId, 5);
+
         await fetchDocuments();
         setSelectedDocId(newDocId);
         setActiveTab('summary');
@@ -83,6 +99,7 @@ export const Landing = () => {
       alert(`Upload failed: ${errorMsg}`);
     } finally {
       setUploading(false);
+      setUploadText('Processing Document...');
     }
   }, []);
 
@@ -217,8 +234,8 @@ export const Landing = () => {
               )}
             </div>
             
-            <h3 className="text-xl font-bold mb-2">
-              {uploading ? 'Processing Document...' : 'Drag & drop your file'}
+            <h3 className="text-xl font-bold mb-2 transition-all">
+              {uploading ? uploadText : 'Drag & drop your file'}
             </h3>
             <p className="text-[var(--color-secondary-text)] text-sm mb-6">PDF, DOCX, TXT, MP3, MP4 — up to 50 MB</p>
             

@@ -74,23 +74,6 @@ export const SummaryView = ({ documentId }) => {
           <h2 className="text-2xl font-bold text-[var(--color-primary-text)]">Executive Summaries</h2>
           <p className="text-[var(--color-secondary-text)] mt-1">AI-generated distillations of your document.</p>
         </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => generateSummary('quick')}
-            disabled={isGenerating}
-            className="px-4 py-2 bg-indigo-50 text-[var(--color-primary)] font-medium rounded-xl hover:bg-indigo-100 transition-colors disabled:opacity-50"
-          >
-            Quick TL;DR
-          </button>
-          <button 
-            onClick={() => generateSummary('standard')}
-            disabled={isGenerating}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 flex items-center"
-          >
-            {isGenerating ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            Generate New
-          </button>
-        </div>
       </div>
 
       {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl">{error}</div>}
@@ -100,7 +83,7 @@ export const SummaryView = ({ documentId }) => {
           <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 border-dashed">
             <Sparkles className="w-12 h-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900">No summaries yet</h3>
-            <p className="text-gray-500 mt-1">Click "Generate New" to create an AI summary.</p>
+            <p className="text-gray-500 mt-1">This document has no summary.</p>
           </div>
         ) : (
           summaries.map(summary => {

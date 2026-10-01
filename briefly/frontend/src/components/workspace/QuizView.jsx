@@ -80,13 +80,6 @@ export const QuizView = ({ documentId }) => {
               <h2 className="text-2xl font-bold text-[var(--color-primary-text)]">Quizzes</h2>
               <p className="text-[var(--color-secondary-text)] mt-1">Test your knowledge with AI-generated questions.</p>
             </div>
-            <button 
-              onClick={generateQuiz} disabled={isGenerating}
-              className="px-4 py-2 bg-[var(--color-primary)] text-white font-medium rounded-xl hover:bg-indigo-700 transition-colors shadow-sm flex items-center"
-            >
-              {isGenerating ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              Generate New Quiz
-            </button>
           </div>
 
           {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-xl">{error}</div>}
@@ -95,7 +88,7 @@ export const QuizView = ({ documentId }) => {
             <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 border-dashed">
               <CheckCircle2 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900">No quizzes generated</h3>
-              <p className="text-gray-500 mt-1">Click above to generate your first quiz.</p>
+              <p className="text-gray-500 mt-1">This document has no quizzes.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
