@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
+import { Helmet } from 'react-helmet-async';
 import { Upload, FileText, Trash2, Loader, PlayCircle } from 'lucide-react';
 import api from '../services/api';
 import { SummaryView } from '../components/workspace/SummaryView';
@@ -9,6 +10,7 @@ import { MindMapView } from '../components/workspace/MindMapView';
 import { FlashcardsView } from '../components/workspace/FlashcardsView';
 import { QuizView } from '../components/workspace/QuizView';
 import { PageTransition } from '../components/common/PageTransition';
+
 
 export const Landing = () => {
   const { id } = useParams();
@@ -170,6 +172,9 @@ export const Landing = () => {
 
   return (
     <PageTransition>
+      <Helmet>
+        <title>{id ? 'Workspace - ENCORE' : 'Dashboard - ENCORE'}</title>
+      </Helmet>
       <div className="min-h-screen pt-16 flex flex-col md:flex-row overflow-hidden bg-[var(--color-background)] transition-colors duration-300">
         
         {/* Left Panel (Like VYRA/Prism) */}

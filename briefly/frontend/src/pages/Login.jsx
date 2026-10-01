@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { BookOpen } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -35,6 +36,9 @@ export const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] px-4 sm:px-6 lg:px-8">
+      <Helmet>
+        <title>Login - ENCORE</title>
+      </Helmet>
       <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-[2rem] shadow-xl border border-gray-100">
         <div className="text-center">
           <BookOpen className="mx-auto h-12 w-12 text-[var(--color-primary)]" />
