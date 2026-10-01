@@ -29,9 +29,7 @@ export default {
   getMe: () => api.get('/auth/me'),
 
   // Documents
-  uploadDocument: (formData) => api.post('/documents', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  uploadDocument: (formData) => api.post('/documents', formData),
   getDocuments: () => api.get('/documents'),
   getDocument: (id) => api.get(`/documents/${id}`),
   deleteDocument: (id) => api.delete(`/documents/${id}`),

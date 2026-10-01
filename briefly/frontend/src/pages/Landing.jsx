@@ -79,7 +79,8 @@ export const Landing = () => {
       }
     } catch (err) {
       console.error("Upload failed", err);
-      alert("Failed to upload document.");
+      const errorMsg = err.response?.data?.message || err.message || "Failed to upload document.";
+      alert(`Upload failed: ${errorMsg}`);
     } finally {
       setUploading(false);
     }
