@@ -30,10 +30,10 @@ export const Upload = () => {
     setError(null);
     if (!selectedFile) return;
 
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'text/plain', 'text/markdown'];
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'text/plain', 'text/markdown', 'audio/mpeg', 'audio/wav', 'audio/webm', 'audio/x-m4a', 'video/mp4', 'video/webm'];
     
     if (!allowedTypes.includes(selectedFile.type)) {
-      setError('Invalid file type. Please upload a PDF, DOCX, PPTX, or TXT file.');
+      setError('Invalid file type. Please upload a PDF, DOCX, PPTX, TXT, or Audio/Video file.');
       return;
     }
 
@@ -97,13 +97,13 @@ export const Upload = () => {
                 <UploadIcon className="w-10 h-10 text-[var(--color-primary)]" />
               </div>
               <h3 className="text-xl font-bold text-[var(--color-primary-text)] mb-2">Click or drag file to upload</h3>
-              <p className="text-[var(--color-secondary-text)]">Supports PDF, DOCX, PPTX, TXT (Max 50MB)</p>
+              <p className="text-[var(--color-secondary-text)]">Supports PDF, DOCX, PPTX, TXT, Audio, Video (Max 50MB)</p>
               <input 
                 type="file" 
                 ref={fileInputRef} 
                 onChange={handleFileChange} 
                 className="hidden" 
-                accept=".pdf,.docx,.pptx,.txt,.md"
+                accept=".pdf,.docx,.pptx,.txt,.md,audio/*,video/*"
               />
             </div>
           ) : (

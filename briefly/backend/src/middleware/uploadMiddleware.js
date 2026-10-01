@@ -12,13 +12,19 @@ const fileFilter = (req, file, cb) => {
     'text/plain', 
     'text/markdown',
     'image/jpeg',
-    'image/png'
+    'image/png',
+    'audio/mpeg',
+    'audio/wav',
+    'audio/webm',
+    'audio/x-m4a',
+    'video/mp4',
+    'video/webm'
   ];
 
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF, DOCX, PPTX, TXT, MD, and Images are allowed.'), false);
+    cb(new Error('Invalid file type. Allowed: PDF, DOCX, PPTX, TXT, MD, Images, Audio, Video.'), false);
   }
 };
 

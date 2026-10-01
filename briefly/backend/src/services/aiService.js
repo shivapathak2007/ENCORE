@@ -143,6 +143,25 @@ class AIService {
 
     return this._generateTextOutput(prompt);
   }
+
+  async transcribeMedia(buffer, mimeType) {
+    if (this.provider === 'gemini') {
+      const model = this.genAI.getGenerativeModel({ model: this.modelStr });
+      const prompt = "Please transcribe the following audio/video accurately, returning only the text.";
+      
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: buffer.toString('base64'),
+            mimeType: mimeType
+          }
+        }
+      ]);
+      return result.response.text();
+    }
+    throw new Error('Unsupported AI provider for media transcription');
+  }
 }
 
 module.exports = new AIService();

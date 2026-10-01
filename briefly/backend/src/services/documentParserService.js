@@ -1,6 +1,7 @@
 const { extractTextFromPDF } = require('./pdfService');
 const { extractTextFromDOCX } = require('./docxService');
 const { extractTextFromPPTX } = require('./pptxService');
+const aiService = require('./aiService');
 
 const parseDocument = async (buffer, mimeType) => {
   let parsedData = { text: '', pageCount: null, metadata: null };
@@ -19,6 +20,8 @@ const parseDocument = async (buffer, mimeType) => {
     parsedData = await extractTextFromDOCX(buffer);
   } else if (typeToUse.includes('presentationml') || typeToUse.includes('ms-powerpoint')) {
     parsedData = await extractTextFromPPTX(buffer);
+  } else if (typeToUse.startsWith('audio/') || typeToUse.startsWith('video/')) {
+    parsedData.text = await aiService.transcribeMedia(buffer, typeToUse);
   } else if (typeToUse.includes('text/') || typeToUse.includes('markdown')) {
     parsedData.text = buffer.toString('utf-8');
   } else {
