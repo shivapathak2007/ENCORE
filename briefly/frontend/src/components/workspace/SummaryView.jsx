@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
-import { Sparkles, Loader, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader, CheckCircle2, Download } from 'lucide-react';
 
 export const SummaryView = ({ documentId }) => {
   const [summaries, setSummaries] = useState([]);
@@ -38,6 +38,29 @@ export const SummaryView = ({ documentId }) => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const downloadMarkdown = (summary) => {
+    const content = summary.content;
+    let md = `# Executive Summary\n\n`;
+    md += `**TL;DR:** ${content.tldr}\n\n`;
+    md += `## Key Takeaways\n`;
+    content.key_takeaways?.forEach(point => md += `- ${point}\n`);
+    md += `\n## Core Concepts\n`;
+    md += content.core_concepts?.join(', ') + '\n\n';
+    if (content.conclusion) {
+      md += `## Conclusion\n${content.conclusion}\n`;
+    }
+    
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `summary-${new Date().getTime()}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {
@@ -84,10 +107,19 @@ export const SummaryView = ({ documentId }) => {
             const content = summary.content;
             return (
               <div key={summary.id} className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-                <div className="inline-flex items-center space-x-2 px-3 py-1 bg-indigo-50 text-[var(--color-primary)] rounded-full text-xs font-semibold mb-6 uppercase tracking-wider">
-                  <span>{summary.summary_type} summary</span>
-                  <span className="opacity-50">•</span>
-                  <span>{new Date(summary.created_at).toLocaleDateString()}</span>
+                <div className="flex justify-between items-start mb-6">
+                  <div className="inline-flex items-center space-x-2 px-3 py-1 bg-indigo-50 text-[var(--color-primary)] rounded-full text-xs font-semibold uppercase tracking-wider">
+                    <span>{summary.summary_type} summary</span>
+                    <span className="opacity-50">•</span>
+                    <span>{new Date(summary.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <button 
+                    onClick={() => downloadMarkdown(summary)}
+                    className="flex items-center space-x-2 text-sm text-gray-500 hover:text-[var(--color-primary)] transition-colors px-3 py-1.5 rounded-lg hover:bg-indigo-50"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Export MD</span>
+                  </button>
                 </div>
                 
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">{content.tldr}</h3>

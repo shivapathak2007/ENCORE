@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Loader, Sparkles, CheckCircle2, XCircle, Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const QuizView = ({ documentId }) => {
   const [quizzes, setQuizzes] = useState([]);
@@ -120,12 +121,17 @@ export const QuizView = ({ documentId }) => {
               <h2 className="text-2xl font-bold text-[var(--color-primary-text)]">{activeQuiz.title}</h2>
             </div>
             {isSubmitted && (
-              <div className="text-right">
+              <motion.div 
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", bounce: 0.5 }}
+                className="text-right"
+              >
                 <span className="text-sm text-[var(--color-secondary-text)] uppercase tracking-wider font-bold">Your Score</span>
                 <p className={`text-4xl font-extrabold ${score / activeQuiz.total_questions > 0.7 ? 'text-green-500' : 'text-orange-500'}`}>
                   {score} <span className="text-xl text-gray-400">/ {activeQuiz.total_questions}</span>
                 </p>
-              </div>
+              </motion.div>
             )}
           </div>
 
@@ -157,17 +163,20 @@ export const QuizView = ({ documentId }) => {
                     }
 
                     return (
-                      <button 
+                      <motion.button 
                         key={i} 
+                        whileTap={!isSubmitted ? { scale: 0.98 } : {}}
+                        animate={isSubmitted && isCorrect ? { scale: [1, 1.02, 1] } : isSubmitted && isSelected && !isCorrect ? { x: [-5, 5, -5, 5, 0] } : {}}
+                        transition={{ duration: 0.4 }}
                         onClick={() => handleSelectAnswer(q.id, opt)}
                         className={optionClass}
                       >
                         <div className="flex justify-between items-center">
                           <span>{opt}</span>
-                          {isSubmitted && isCorrect && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                          {isSubmitted && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-500" />}
+                          {isSubmitted && isCorrect && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><CheckCircle2 className="w-5 h-5 text-green-500" /></motion.div>}
+                          {isSubmitted && isSelected && !isCorrect && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}><XCircle className="w-5 h-5 text-red-500" /></motion.div>}
                         </div>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
