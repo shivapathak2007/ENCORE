@@ -90,7 +90,12 @@ export const Landing = () => {
     accept: {
       'application/pdf': ['.pdf'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt']
+      'text/plain': ['.txt'],
+      'audio/mpeg': ['.mp3'],
+      'audio/wav': ['.wav'],
+      'audio/webm': ['.weba'],
+      'video/mp4': ['.mp4'],
+      'video/webm': ['.webm']
     },
     maxSize: 50 * 1024 * 1024 // 50MB
   });
@@ -214,7 +219,7 @@ export const Landing = () => {
             <h3 className="text-xl font-bold mb-2">
               {uploading ? 'Processing Document...' : 'Drag & drop your file'}
             </h3>
-            <p className="text-[var(--color-secondary-text)] text-sm mb-6">PDF, DOCX, TXT — up to 50 MB</p>
+            <p className="text-[var(--color-secondary-text)] text-sm mb-6">PDF, DOCX, TXT, MP3, MP4 — up to 50 MB</p>
             
             {!uploading && (
               <button className="px-6 py-2.5 rounded-full bg-[var(--color-primary-text)] text-[var(--color-background)] font-semibold text-sm hover:scale-105 transition-transform shadow-md">
